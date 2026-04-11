@@ -69,3 +69,4 @@ next-env.d.ts
 
 # Locus credentials (never commit real API keys)
 locus-credentials.json
+TASK.md
