@@ -12,6 +12,9 @@ RUN npm install
 # Copy source and build
 COPY . .
 RUN npx prisma generate
+# NEXT_PUBLIC_* vars are baked into the JS bundle at build time
+ARG NEXT_PUBLIC_PRIVY_APP_ID=cmnuceoqb012n0cjvfqh2rlej
+ENV NEXT_PUBLIC_PRIVY_APP_ID=$NEXT_PUBLIC_PRIVY_APP_ID
 RUN npm run build
 
 ENV NODE_ENV=production
