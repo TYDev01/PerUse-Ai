@@ -1,0 +1,27 @@
+{
+  "services": {
+    "web": {
+      "path": ".",
+      "port": 8080,
+      "healthCheck": "/api/health",
+      "startCommand": "npx prisma migrate deploy && node server.js",
+      "runtime": { "cpu": 512, "memory": 1024 },
+      "env": {
+        "DATABASE_URL": "${{db.DATABASE_URL}}",
+        "NODE_ENV": "production",
+        "NEXT_PUBLIC_PRIVY_APP_ID": "REPLACE_WITH_PRIVY_APP_ID",
+        "PRIVY_APP_SECRET": "REPLACE_WITH_PRIVY_APP_SECRET",
+        "APP_URL": "${{web.URL}}",
+        "LOCUS_API_KEY": "REPLACE_WITH_LOCUS_API_KEY",
+        "LOCUS_API_BASE": "https://api.paywithlocus.com/api",
+        "LOCUS_WEBHOOK_SECRET": "REPLACE_WITH_WEBHOOK_SECRET",
+        "PAYMENT_MOCK_MODE": "false",
+        "PLATFORM_FEE_PERCENT": "20",
+        "PLATFORM_FEE_MINIMUM": "0.10"
+      }
+    }
+  },
+  "addons": {
+    "db": { "type": "postgres" }
+  }
+}

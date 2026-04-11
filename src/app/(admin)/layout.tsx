@@ -1,0 +1,39 @@
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login?callbackUrl=/admin/dashboard");
+  }
+
+  if (session.user.role !== "ADMIN") {
+    redirect("/");
+  }
+
+  return (
+    <div className="min-h-screen flex">
+      <aside className="w-60 shrink-0 glass border-r border-white/5 flex flex-col pt-24 px-4 pb-8 gap-1">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">Admin</p>
+        <Link href="/admin/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm">
+          <span>📊</span> Dashboard
+        </Link>
+        <Link href="/admin/tools" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm">
+          <span>🛠️</span> All Tools
+        </Link>
+        <Link href="/admin/runs" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm">
+          <span>▶️</span> All Runs
+        </Link>
+        <div className="mt-auto">
+          <Link href="/browse" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all text-sm">
+            <span>🛍️</span> View Marketplace
+          </Link>
+        </div>
+      </aside>
+
+      <main className="flex-1 pt-24 px-8 pb-12">{children}</main>
+    </div>
+  );
+}

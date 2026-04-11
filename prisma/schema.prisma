@@ -1,0 +1,203 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  CREATOR
+  ADMIN
+}
+
+enum ToolStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ToolType {
+  PROMPT_TEMPLATE
+  RESEARCH_WORKFLOW
+}
+
+enum InputFieldType {
+  TEXT
+  TEXTAREA
+  URL
+  SELECT
+}
+
+enum RunStatus {
+  PENDING_PAYMENT
+  PAID
+  EXECUTING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  CONFIRMED
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  privyDid     String?  @unique
+  name         String?
+  email        String   @unique
+  passwordHash String?
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tools          Tool[]
+  toolRuns       ToolRun[]
+  toolReviews    ToolReview[]
+  creatorBalance CreatorBalance?
+
+  @@map("users")
+}
+
+model Tool {
+  id               String     @id @default(cuid())
+  creatorId        String
+  name             String
+  slug             String     @unique
+  shortDescription String
+  fullDescription  String
+  category         String
+  tags             String[]
+  coverImageUrl    String?
+  type             ToolType
+  status           ToolStatus @default(DRAFT)
+  price            Float
+  featured         Boolean    @default(false)
+  totalRuns        Int        @default(0)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  creator         User                 @relation(fields: [creatorId], references: [id])
+  inputFields     ToolInputField[]
+  executionConfig ToolExecutionConfig?
+  toolRuns        ToolRun[]
+  toolReviews     ToolReview[]
+
+  @@index([status, category])
+  @@index([slug])
+  @@map("tools")
+}
+
+model ToolInputField {
+  id          String         @id @default(cuid())
+  toolId      String
+  key         String
+  label       String
+  type        InputFieldType @default(TEXT)
+  required    Boolean        @default(true)
+  placeholder String?
+  helperText  String?
+  options     String[]
+  sortOrder   Int            @default(0)
+
+  tool Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@map("tool_input_fields")
+}
+
+model ToolExecutionConfig {
+  id         String   @id @default(cuid())
+  toolId     String   @unique
+  provider   String
+  model      String
+  configJson Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tool Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@map("tool_execution_configs")
+}
+
+model ToolRun {
+  id             String    @id @default(cuid())
+  toolId         String
+  userId         String?
+  sessionId      String?
+  inputJson      Json
+  outputJson     Json?
+  outputText     String?
+  status         RunStatus @default(PENDING_PAYMENT)
+  provider       String?
+  model          String?
+  providerCost   Float?
+  salePrice      Float
+  platformFee    Float?
+  creatorEarning Float?
+  paymentId      String?
+  errorMessage   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tool    Tool     @relation(fields: [toolId], references: [id])
+  user    User?    @relation(fields: [userId], references: [id])
+  payment Payment?
+
+  @@index([toolId])
+  @@index([userId])
+  @@index([sessionId])
+  @@map("tool_runs")
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  toolRunId         String        @unique
+  provider          String        @default("locus")
+  externalSessionId String?
+  externalReference String?
+  amount            Float
+  currency          String        @default("USDC")
+  status            PaymentStatus @default(PENDING)
+  webhookPayload    Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  toolRun ToolRun @relation(fields: [toolRunId], references: [id])
+
+  @@map("payments")
+}
+
+model ToolReview {
+  id        String   @id @default(cuid())
+  toolId    String
+  adminId   String
+  action    String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  tool  Tool @relation(fields: [toolId], references: [id])
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@map("tool_reviews")
+}
+
+model CreatorBalance {
+  id              String   @id @default(cuid())
+  creatorId       String   @unique
+  pendingAmount   Float    @default(0)
+  availableAmount Float    @default(0)
+  settledAmount   Float    @default(0)
+  updatedAt       DateTime @updatedAt
+
+  creator User @relation(fields: [creatorId], references: [id])
+
+  @@map("creator_balances")
+}

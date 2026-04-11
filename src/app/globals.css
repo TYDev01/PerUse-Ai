@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0c1117;
+  --foreground: #e2e8ff;
+  --card: rgba(15, 20, 30, 0.8);
+  --card-border: rgba(0, 200, 150, 0.12);
+  --primary: #00C896;
+  --primary-hover: #00b585;
+  --accent: #00C896;
+  --muted: rgba(255,255,255,0.04);
+  --muted-fg: #8b9ab0;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.07);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 200, 150, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 5% 80%, rgba(0, 64, 160, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 95% 40%, rgba(0, 200, 150, 0.04) 0%, transparent 55%);
+  background-attachment: fixed;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-card {
+  background: rgba(15, 22, 33, 0.7);
+  border: 1px solid rgba(0, 200, 150, 0.10);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glow-primary {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+
+/* Selection */
+::selection { background: rgba(0, 200, 150, 0.25); }
+
+/* Form inputs */
+input, textarea, select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: var(--foreground);
+  border-radius: 8px;
+  padding: 10px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  color-scheme: dark;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: rgba(0, 200, 150, 0.5);
+  box-shadow: 0 0 0 2px rgba(0, 200, 150, 0.08);
+}
+input::placeholder, textarea::placeholder {
+  color: rgba(139, 154, 176, 0.5);
+}
+select option {
+  background: #0f1621;
+  color: #e2e8ff;
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.4); }
+}
+.animate-fade-up { animation: fadeUp 0.5s ease forwards; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
