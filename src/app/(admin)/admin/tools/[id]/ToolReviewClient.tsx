@@ -20,7 +20,7 @@ export default function AdminToolReviewClient({ tool }: { tool: any }) {
     const res = await fetch(`/api/admin/tools/${tool.id}/review`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, notes: notes || undefined }),
+      body: JSON.stringify({ action: action.toUpperCase(), reason: notes || undefined }),
     });
     setLoading(null);
     if (res.ok) router.push("/admin/tools");
@@ -117,14 +117,14 @@ export default function AdminToolReviewClient({ tool }: { tool: any }) {
               disabled={loading !== null}
               className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-semibold text-sm transition-all"
             >
-              {loading === "approve" ? "Approving..." : "✓ Approve"}
+              {loading === "approve" ? "Approving..." : "Approve"}
             </button>
             <button
               onClick={() => review("reject")}
               disabled={loading !== null}
               className="flex-1 py-3 rounded-xl bg-red-600/80 hover:bg-red-600 disabled:opacity-50 text-white font-semibold text-sm transition-all"
             >
-              {loading === "reject" ? "Rejecting..." : "✕ Reject"}
+              {loading === "reject" ? "Rejecting..." : "Reject"}
             </button>
           </div>
         </div>

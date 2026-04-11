@@ -135,7 +135,7 @@ export default function Navbar() {
                   href="/register"
                   className="text-sm px-4 py-2.5 rounded-lg bg-[#00C896] text-[#0c1117] font-bold hover:bg-[#00b585] transition-all shadow-lg shadow-[#00C896]/20 hover:shadow-[#00C896]/40"
                 >
-                  Start Free Trial
+                  Get Started
                 </Link>
               </>
             )}

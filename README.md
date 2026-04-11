@@ -124,3 +124,9 @@ prisma/
 
 Private — all rights reserved.
 
+# Exchange API key for token
+TOKEN=$(curl -s -X POST https://api.buildwithlocus.com/v1/auth/exchange \
+  -H "Content-Type: application/json" \
+  -d '{"apiKey":"YOUR_CLAW_API_KEY"}' | jq -r '.token')
+
+# One-call deploy (creates project + postgres addon + triggers build)

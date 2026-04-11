@@ -3,19 +3,26 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import AdminToolReviewClient from "./ToolReviewClient";
 
+import { db } from "@/lib/db";
+
 async function getTool(id: string) {
-  const base = process.env.APP_URL ?? "http://localhost:3000";
-  const res = await fetch(`${base}/api/admin/tools?id=${id}`, { cache: "no-store" });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.tools?.[0] ?? null;
+  return db.tool.findUnique({
+    where: { id },
+    include: {
+      creator: { select: { name: true, email: true } },
+      executionConfig: true,
+      inputFields: { orderBy: { sortOrder: "asc" } },
+      _count: { select: { toolRuns: true } },
+    },
+  });
 }
 
-export default async function AdminToolReviewPage({ params }: { params: { id: string } }) {
+export default async function AdminToolReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
-  const tool = await getTool(params.id);
+  const { id } = await params;
+  const tool = await getTool(id);
   if (!tool) notFound();
 
   return (

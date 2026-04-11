@@ -1,20 +1,38 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { db } from "@/lib/db";
 
 async function getStats() {
-  const base = process.env.APP_URL ?? "http://localhost:3000";
-  const res = await fetch(`${base}/api/admin/stats`, { cache: "no-store" });
-  if (!res.ok) return null;
-  return res.json();
+  const [totalUsers, toolGroups, pendingToolsCount, runs, payments] = await Promise.all([
+    db.user.count(),
+    db.tool.groupBy({ by: ["status"], _count: true }),
+    db.tool.count({ where: { status: "PENDING_REVIEW" } }),
+    db.toolRun.findMany({
+      select: { status: true, salePrice: true, platformFee: true },
+    }),
+    db.payment.findMany({
+      select: { status: true, amount: true },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
+  ]);
+  const totalTools = toolGroups.reduce((s, g) => s + g._count, 0);
+  const completedRuns = runs.filter((r) => r.status === "COMPLETED");
+  const gmv = completedRuns.reduce((s, r) => s + r.salePrice, 0);
+  const platformRevenue = completedRuns.reduce((s, r) => s + (r.platformFee ?? 0), 0);
+  const failedRuns = runs.filter((r) => r.status === "FAILED").length;
+  const activeCreators = await db.user.count({ where: { role: "CREATOR", tools: { some: { status: "APPROVED" } } } });
+  return { totalUsers, totalTools, gmv, platformRevenue, totalRuns: runs.length, failedRuns, pendingToolsCount, activeCreators };
 }
 
 async function getPendingTools() {
-  const base = process.env.APP_URL ?? "http://localhost:3000";
-  const res = await fetch(`${base}/api/admin/tools?status=PENDING_REVIEW&limit=5`, { cache: "no-store" });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.tools ?? [];
+  return db.tool.findMany({
+    where: { status: "PENDING_REVIEW" },
+    include: { creator: { select: { name: true } } },
+    orderBy: { createdAt: "asc" },
+    take: 5,
+  });
 }
 
 export default async function AdminDashboard() {
@@ -31,17 +49,16 @@ export default async function AdminDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
-          { label: "Total Users", value: stats?.totalUsers ?? 0, icon: "👥" },
-          { label: "Total Tools", value: stats?.totalTools ?? 0, icon: "🛠️" },
-          { label: "GMV", value: `$${(stats?.gmv ?? 0).toFixed(2)}`, icon: "💵" },
-          { label: "Platform Revenue", value: `$${(stats?.platformRevenue ?? 0).toFixed(2)}`, icon: "💰" },
-          { label: "Total Runs", value: stats?.totalRuns ?? 0, icon: "▶️" },
-          { label: "Failed Runs", value: stats?.failedRuns ?? 0, icon: "❌" },
-          { label: "Pending Review", value: stats?.pendingToolsCount ?? 0, icon: "⏳" },
-          { label: "Active Creators", value: stats?.activeCreators ?? 0, icon: "✨" },
+          { label: "Total Users", value: stats?.totalUsers ?? 0 },
+          { label: "Total Tools", value: stats?.totalTools ?? 0 },
+          { label: "GMV", value: `$${(stats?.gmv ?? 0).toFixed(2)}` },
+          { label: "Platform Revenue", value: `$${(stats?.platformRevenue ?? 0).toFixed(2)}` },
+          { label: "Total Runs", value: stats?.totalRuns ?? 0 },
+          { label: "Failed Runs", value: stats?.failedRuns ?? 0 },
+          { label: "Pending Review", value: stats?.pendingToolsCount ?? 0 },
+          { label: "Active Creators", value: stats?.activeCreators ?? 0 },
         ].map((s) => (
           <div key={s.label} className="glass-card rounded-2xl p-5">
-            <div className="text-2xl mb-2">{s.icon}</div>
             <div className="text-2xl font-bold text-white">{s.value}</div>
             <div className="text-sm text-slate-400 mt-0.5">{s.label}</div>
           </div>
@@ -67,7 +84,7 @@ export default async function AdminDashboard() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <div className="text-white font-semibold">${tool.salePrice?.toFixed(2)}</div>
+                  <div className="text-white font-semibold">${tool.price?.toFixed(2)}</div>
                   <Link
                     href={`/admin/tools/${tool.id}`}
                     className="px-3 py-1.5 bg-[#00C896] hover:bg-[#00b585] text-white text-xs rounded-lg font-medium transition-all"
@@ -83,7 +100,6 @@ export default async function AdminDashboard() {
 
       {pendingTools.length === 0 && (
         <div className="glass-card rounded-2xl p-8 text-center text-slate-400">
-          <div className="text-4xl mb-3">✅</div>
           <p className="text-white font-medium">No tools pending review</p>
         </div>
       )}

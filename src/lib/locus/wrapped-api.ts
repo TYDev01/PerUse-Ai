@@ -42,7 +42,7 @@ export async function openAiChat(params: {
   maxTokens?: number;
   temperature?: number;
 }): Promise<{ text: string; cost: number }> {
-  const { data, cost } = await locusWrapped("openai", "chat-completions", {
+  const { data, cost } = await locusWrapped("openai", "chat", {
     model: params.model ?? "gpt-4o-mini",
     messages: params.messages,
     max_tokens: params.maxTokens ?? 2048,

@@ -146,7 +146,7 @@ function LandingNavbar() {
                   href="/register"
                   className="text-sm px-4 py-2.5 rounded-lg bg-[#00C896] text-[#0c1117] font-bold hover:bg-[#00b585] transition-all shadow-lg shadow-[#00C896]/20 hover:shadow-[#00C896]/40"
                 >
-                  Start Free Trial
+                  Get Started
                 </Link>
               </>
             )}
@@ -181,7 +181,7 @@ function LandingNavbar() {
             <div className="pt-3 flex flex-col gap-2">
               <Link href="/login" className="text-sm text-[#8b9ab0] hover:text-white py-2">Sign In</Link>
               <Link href="/register" className="text-sm px-4 py-3 rounded-lg bg-[#00C896] text-[#0c1117] font-bold text-center">
-                Start Free Trial
+                Get Started
               </Link>
             </div>
           </div>

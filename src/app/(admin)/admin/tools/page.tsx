@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { db } from "@/lib/db";
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-slate-500/20 text-slate-400",
@@ -10,14 +11,14 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 async function getTools(status?: string) {
-  const base = process.env.APP_URL ?? "http://localhost:3000";
-  const url = status
-    ? `${base}/api/admin/tools?status=${status}`
-    : `${base}/api/admin/tools`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.tools ?? [];
+  return db.tool.findMany({
+    where: status ? { status: status as never } : undefined,
+    include: {
+      creator: { select: { name: true, email: true } },
+      _count: { select: { toolRuns: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 }
 
 export default async function AdminToolsPage({
@@ -73,7 +74,7 @@ export default async function AdminToolsPage({
               </div>
               <div className="flex items-center gap-4 shrink-0">
                 <div className="text-right">
-                  <div className="text-white font-semibold">${tool.salePrice?.toFixed(2)}</div>
+                  <div className="text-white font-semibold">${tool.price?.toFixed(2)}</div>
                   <div className="text-slate-500 text-xs">{tool._count?.runs ?? 0} runs</div>
                 </div>
                 <Link
