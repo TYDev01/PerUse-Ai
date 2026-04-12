@@ -55,6 +55,10 @@ export async function createCheckoutSession(params: {
     };
   }
 
+  // Only include webhookUrl if it's a public HTTPS URL (Locus rejects localhost)
+  const isPublicWebhook =
+    params.webhookUrl?.startsWith("https://") ?? false;
+
   const res = await locusFetch("/checkout/sessions", {
     method: "POST",
     body: JSON.stringify({
@@ -62,7 +66,7 @@ export async function createCheckoutSession(params: {
       currency: "USDC",
       description: params.description,
       metadata: params.metadata,
-      webhookUrl: params.webhookUrl,
+      ...(isPublicWebhook ? { webhookUrl: params.webhookUrl } : {}),
       receiptConfig: { enabled: true },
     }),
   });

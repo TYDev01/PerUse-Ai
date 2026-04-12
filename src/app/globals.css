@@ -23,6 +23,16 @@
   box-sizing: border-box;
 }
 
+@layer base {
+  button,
+  [role="button"],
+  [type="button"],
+  [type="submit"],
+  [type="reset"] {
+    cursor: pointer;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

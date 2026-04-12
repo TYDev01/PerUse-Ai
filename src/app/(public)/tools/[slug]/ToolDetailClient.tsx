@@ -211,7 +211,7 @@ export default function ToolDetailClient({ tool }: { tool: Tool }) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-4 rounded-xl bg-[#00C896] hover:bg-[#00b585] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-lg transition-all glow-primary hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full py-4 rounded-xl bg-[#00C896] hover:bg-[#00b585] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white font-semibold text-lg transition-all glow-primary hover:scale-[1.02] active:scale-[0.98]"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">

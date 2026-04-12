@@ -55,16 +55,16 @@ export default function CheckoutClient({ runId }: { runId: string }) {
     return () => clearInterval(interval);
   }, [polling, runId, router]);
 
-  async function handlePayMock() {
+  async function handlePay() {
     if (!run) return;
     setPaying(true);
     setError("");
     try {
-      // In mock mode: mark as PAID then trigger execution
-      const markRes = await fetch(`/api/runs/${runId}/pay-mock`, {
-        method: "POST",
-      });
-      if (!markRes.ok) throw new Error("Payment failed");
+      const res = await fetch(`/api/runs/${runId}/pay`, { method: "POST" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error ?? "Payment failed");
+      }
       setPolling(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment failed");
@@ -91,8 +91,6 @@ export default function CheckoutClient({ runId }: { runId: string }) {
       </div>
     );
   }
-
-  const isMockMode = process.env.NODE_ENV === "development";
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
@@ -144,9 +142,9 @@ export default function CheckoutClient({ runId }: { runId: string }) {
                 </div>
               )}
 
-              {/* Dev mock payment button */}
+              {/* Pay with Locus button */}
               <button
-                onClick={handlePayMock}
+                onClick={handlePay}
                 disabled={paying}
                 className="w-full py-4 rounded-xl bg-[#00C896] hover:bg-[#00b585] disabled:opacity-50 text-white font-semibold text-lg transition-all glow-primary mb-3"
               >
