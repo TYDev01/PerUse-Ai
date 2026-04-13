@@ -18,6 +18,7 @@ export default function CheckoutClient({ runId }: { runId: string }) {
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");
   const [polling, setPolling] = useState(false);
+  const [confirmingPayment, setConfirmingPayment] = useState(false);
 
   const fetchRun = useCallback(async () => {
     try {
@@ -38,7 +39,28 @@ export default function CheckoutClient({ runId }: { runId: string }) {
     fetchRun();
   }, [fetchRun]);
 
-  // Poll for status updates after payment
+  // Poll /pay-status until payment is confirmed, then poll run status for completion
+  useEffect(() => {
+    if (!confirmingPayment) return;
+    const interval = setInterval(async () => {
+      const res = await fetch(`/api/runs/${runId}/pay-status`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.status === "FAILED") {
+        setConfirmingPayment(false);
+        setPaying(false);
+        setError(data.error ?? "Payment failed");
+        clearInterval(interval);
+      } else if (data.status === "PAID" || data.status === "EXECUTING" || data.status === "COMPLETED") {
+        setConfirmingPayment(false);
+        setPolling(true);
+        clearInterval(interval);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [confirmingPayment, runId]);
+
+  // Poll run status after payment confirmed, waiting for COMPLETED/FAILED
   useEffect(() => {
     if (!polling) return;
     const interval = setInterval(async () => {
@@ -65,7 +87,9 @@ export default function CheckoutClient({ runId }: { runId: string }) {
         const body = await res.json().catch(() => ({}));
         throw new Error((body as { error?: string }).error ?? "Payment failed");
       }
-      setPolling(true);
+      // Pay route returns immediately with {status: "pending", transactionId}
+      // Start polling /pay-status client-side for confirmation
+      setConfirmingPayment(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment failed");
       setPaying(false);
@@ -128,7 +152,13 @@ export default function CheckoutClient({ runId }: { runId: string }) {
             ))}
           </div>
 
-          {polling ? (
+          {confirmingPayment ? (
+            <div className="text-center py-4">
+              <div className="w-8 h-8 border-2 border-[#00C896]/30 border-t-[#00C896] rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-slate-300 text-sm">Confirming payment on Base...</p>
+              <p className="text-slate-500 text-xs mt-1">Waiting for blockchain confirmation</p>
+            </div>
+          ) : polling ? (
             <div className="text-center py-4">
               <div className="w-8 h-8 border-2 border-[#00C896]/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-3" />
               <p className="text-slate-300 text-sm">Payment received. Executing tool...</p>

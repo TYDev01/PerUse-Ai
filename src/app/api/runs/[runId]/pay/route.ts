@@ -37,7 +37,7 @@ export async function POST(
 
   const sessionId = run.payment.externalSessionId;
 
-  // Pay the checkout session via Locus agent checkout API (deducts from our wallet)
+  // Initiate payment via Locus agent checkout API
   const payRes = await locusFetch(`/checkout/agent/pay/${sessionId}`, {
     method: "POST",
     body: JSON.stringify({}),
@@ -59,51 +59,12 @@ export async function POST(
     return NextResponse.json({ error: "No transaction ID returned from Locus" }, { status: 500 });
   }
 
-  // Poll until CONFIRMED (up to 60 seconds, 2s intervals)
-  let confirmed = false;
-  for (let i = 0; i < 30; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
+  // Store transactionId so the client can poll /pay-status
+  await db.payment.update({
+    where: { id: run.payment.id },
+    data: { externalReference: transactionId },
+  });
 
-    const pollRes = await locusFetch(`/checkout/agent/payments/${transactionId}`);
-    if (pollRes.ok) {
-      const pollData = await pollRes.json();
-      const status: string =
-        (pollData.data?.status as string | undefined) ??
-        (pollData.status as string | undefined) ??
-        "";
-
-      if (status === "CONFIRMED") {
-        confirmed = true;
-        break;
-      }
-      if (status === "FAILED" || status === "POLICY_REJECTED") {
-        return NextResponse.json({ error: `Payment ${status.toLowerCase()}` }, { status: 402 });
-      }
-    }
-  }
-
-  if (!confirmed) {
-    return NextResponse.json({ error: "Payment confirmation timed out" }, { status: 408 });
-  }
-
-  // Mark payment confirmed + run as PAID
-  await db.$transaction([
-    db.payment.update({
-      where: { id: run.payment.id },
-      data: { status: "CONFIRMED", externalReference: transactionId },
-    }),
-    db.toolRun.update({
-      where: { id: runId },
-      data: { status: "PAID", paymentId: run.payment.id },
-    }),
-  ]);
-
-  // Trigger execution (fire and forget)
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
-  fetch(`${appUrl}/api/runs/${runId}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  }).catch(console.error);
-
-  return NextResponse.json({ status: "PAID", transactionId });
+  // Return immediately — client will poll /pay-status for confirmation
+  return NextResponse.json({ status: "pending", transactionId });
 }
