@@ -16,11 +16,13 @@ function locusFetch(path: string) {
 
 /**
  * GET /api/runs/[runId]/pay-status
- * Client polls this every few seconds after initiating payment.
- * Checks Locus once per call; updates DB and triggers execution when confirmed.
+ * Polled by the client every few seconds.
+ * Checks the Locus checkout SESSION status (not agent transaction status),
+ * so users can pay via Locus's hosted checkout page with their own wallet.
+ * Returns { status, checkoutUrl? } — checkoutUrl is shown to the user until paid.
  */
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ runId: string }> }
 ) {
   const { runId } = await params;
@@ -34,8 +36,8 @@ export async function GET(
     return NextResponse.json({ error: "Run not found" }, { status: 404 });
   }
 
-  // Already past payment — nothing to do
-  if (run.status === "PAID" || run.status === "EXECUTING" || run.status === "COMPLETED") {
+  // Already confirmed or executing
+  if (["PAID", "EXECUTING", "COMPLETED"].includes(run.status)) {
     return NextResponse.json({ status: run.status });
   }
 
@@ -43,36 +45,44 @@ export async function GET(
     return NextResponse.json({ status: "FAILED" });
   }
 
-  const transactionId = run.payment.externalReference;
-  if (!transactionId) {
+  const sessionId = run.payment.externalSessionId;
+  if (!sessionId) {
     return NextResponse.json({ status: "pending" });
   }
 
-  // Check transaction status with Locus once
-  const pollRes = await locusFetch(`/checkout/agent/payments/${transactionId}`);
-  if (!pollRes.ok) {
+  // Mock mode: no real Locus session exists
+  if (sessionId.startsWith("mock_")) {
+    return NextResponse.json({ status: "pending", mockMode: true });
+  }
+
+  // Check session status from Locus
+  const sessionRes = await locusFetch(`/checkout/sessions/${sessionId}`);
+  if (!sessionRes.ok) {
     return NextResponse.json({ status: "pending" });
   }
 
-  const pollData = await pollRes.json();
-  const txStatus: string =
-    (pollData.data?.status as string | undefined) ??
-    (pollData.status as string | undefined) ??
-    "";
+  const sessionData = await sessionRes.json();
+  const session = sessionData.data as {
+    status?: string;
+    checkoutUrl?: string;
+  } | null;
 
-  if (txStatus === "FAILED" || txStatus === "POLICY_REJECTED") {
-    await db.payment.update({
-      where: { id: run.payment.id },
-      data: { status: "FAILED" },
+  const sessionStatus = session?.status ?? "";
+  const checkoutUrl = session?.checkoutUrl ?? "";
+
+  if (sessionStatus === "EXPIRED" || sessionStatus === "CANCELLED") {
+    return NextResponse.json({
+      status: "FAILED",
+      error: "Payment session has expired. Please go back and start a new run.",
     });
-    return NextResponse.json({ status: "FAILED", error: `Payment ${txStatus.toLowerCase()}` });
   }
 
-  if (txStatus !== "CONFIRMED") {
-    return NextResponse.json({ status: "pending" });
+  // Not yet paid — return checkoutUrl so the client can show it to the user
+  if (sessionStatus !== "PAID") {
+    return NextResponse.json({ status: "pending", checkoutUrl });
   }
 
-  // Atomically mark as confirmed + PAID (idempotent with upsert-style check)
+  // Session is PAID — update DB and trigger execution (idempotent)
   await db.$transaction([
     db.payment.update({
       where: { id: run.payment.id },
@@ -80,13 +90,12 @@ export async function GET(
     }),
     db.toolRun.update({
       where: { id: runId },
-      data: { status: "PAID", paymentId: run.payment.id },
+      data: { status: "PAID" },
     }),
   ]);
 
-  // Trigger execution — call the internal runs POST endpoint (fire and forget)
-  const baseUrl = `http://localhost:${process.env.PORT ?? 3000}`;
-  fetch(`${baseUrl}/api/runs/${runId}`, {
+  const port = process.env.PORT ?? 3000;
+  fetch(`http://localhost:${port}/api/runs/${runId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   }).catch(console.error);
