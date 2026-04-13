@@ -20,6 +20,7 @@ export default function CheckoutClient({ runId }: { runId: string }) {
   const [error, setError] = useState("");
   const [polling, setPolling] = useState(false);
   const [mockPaying, setMockPaying] = useState(false);
+  const [manualChecking, setManualChecking] = useState(false);
 
   const fetchRun = useCallback(async () => {
     try {
@@ -94,10 +95,24 @@ export default function CheckoutClient({ runId }: { runId: string }) {
     }
   }
 
+  async function handleAlreadyPaid() {
+    setManualChecking(true);
+    try {
+      const res = await fetch(`/api/runs/${runId}/pay-status`);
+      if (res.ok) {
+        const data = await res.json();
+        if (["PAID", "EXECUTING", "COMPLETED"].includes(data.status)) {
+          setPolling(true);
+        }
+      }
+    } catch {}
+    setManualChecking(false);
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#00C896]/30 border-t-indigo-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
@@ -115,68 +130,49 @@ export default function CheckoutClient({ runId }: { runId: string }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="glass-card rounded-3xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00C896] to-[#009e78] flex items-center justify-center text-3xl mx-auto mb-4">
-              💳
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-1">Complete Payment</h1>
-            <p className="text-slate-400 text-sm">{run.tool.name}</p>
-          </div>
+    <div className="min-h-screen flex flex-col bg-black">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-6 py-4">
+        <span className="font-bold text-white text-lg tracking-tight">
+          Peruse<span className="text-[#00C896]">AI</span>
+        </span>
+        <span className="text-slate-500 text-sm">Secure Payment via Locus</span>
+      </div>
 
-          {/* Amount */}
-          <div className="glass rounded-2xl p-5 mb-6 text-center">
-            <div className="text-4xl font-bold text-white mb-1">
-              ${run.salePrice.toFixed(2)}
-            </div>
-            <div className="text-slate-400 text-sm">USDC on Base</div>
+      {/* Main content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-10">
+        {polling ? (
+          <div className="text-center py-16">
+            <div className="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-5" />
+            <p className="text-white font-semibold text-lg">Payment received</p>
+            <p className="text-slate-400 text-sm mt-1">Executing tool… this usually takes 10–30 seconds</p>
           </div>
-
-          {/* Details */}
-          <div className="space-y-3 mb-6">
-            {[
-              { label: "Tool", value: run.tool.name },
-              { label: "Run ID", value: run.id.slice(0, 16) + "..." },
-              { label: "Network", value: "Base (Ethereum L2)" },
-              { label: "Provider", value: "Locus Pay" },
-            ].map((d) => (
-              <div key={d.label} className="flex justify-between text-sm">
-                <span className="text-slate-400">{d.label}</span>
-                <span className="text-slate-200 font-medium">{d.value}</span>
-              </div>
-            ))}
+        ) : error ? (
+          <div className="w-full max-w-md text-center">
+            <p className="text-2xl font-bold text-white mb-2">Payment failed</p>
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-6">
+              {error}
+            </div>
+            <a
+              href="/browse"
+              className="inline-block py-3 px-6 rounded-xl text-slate-400 border border-white/10 hover:bg-white/5 text-sm transition-all"
+            >
+              Browse other tools
+            </a>
           </div>
-
-          {/* Payment action area */}
-          {polling ? (
-            <div className="text-center py-4">
-              <div className="w-8 h-8 border-2 border-[#00C896]/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-slate-300 text-sm">Payment received. Executing tool...</p>
-              <p className="text-slate-500 text-xs mt-1">This usually takes 10–30 seconds</p>
-            </div>
-          ) : error ? (
-            <div>
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-4">
-                {error}
-              </div>
-              <a
-                href="/browse"
-                className="block w-full py-3 rounded-xl text-center text-slate-400 border border-white/10 hover:bg-white/5 text-sm transition-all"
-              >
-                Browse other tools
-              </a>
-            </div>
-          ) : mockMode ? (
+        ) : mockMode ? (
+          <div className="text-center">
+            <p className="text-2xl font-bold text-white mb-1">Hire {run.tool.name}</p>
+            <p className="text-slate-400 mb-8">
+              Pay {run.salePrice.toFixed(0)} USDC to start your task
+            </p>
             <button
               onClick={handleMockPay}
               disabled={mockPaying}
-              className="w-full py-4 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold text-lg transition-all mb-3"
+              className="py-4 px-10 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold text-lg transition-all"
             >
               {mockPaying ? (
-                <span className="flex items-center justify-center gap-2">
+                <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Processing...
                 </span>
@@ -184,30 +180,54 @@ export default function CheckoutClient({ runId }: { runId: string }) {
                 "Simulate Payment (Dev)"
               )}
             </button>
-          ) : checkoutUrl ? (
-            <>
+          </div>
+        ) : checkoutUrl ? (
+          <>
+            <div className="text-center mb-6">
+              <h1 className="text-3xl font-bold text-white mb-1">Hire {run.tool.name}</h1>
+              <p className="text-slate-400">
+                Pay {run.salePrice.toFixed(0)} USDC to start your research task
+              </p>
+            </div>
+
+            {/* Embedded Locus checkout */}
+            <div className="w-full max-w-[420px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+              <iframe
+                src={checkoutUrl}
+                className="w-full"
+                style={{ height: "520px" }}
+                allow="payment"
+                title="Locus Checkout"
+              />
+            </div>
+
+            {/* Fallback links */}
+            <p className="text-slate-600 text-sm mt-5 text-center">
+              Having trouble? Open checkout in a new tab:{" "}
               <a
                 href={checkoutUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full py-4 rounded-xl bg-[#00C896] hover:bg-[#00b585] text-white font-semibold text-lg text-center transition-all glow-primary mb-3"
+                className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2"
               >
-                Pay with Locus (USDC)
+                Open Locus Checkout
               </a>
-              <p className="text-center text-xs text-slate-500 mb-1">
-                Opens Locus checkout · Payments on Base network
-              </p>
-              <p className="text-center text-xs text-slate-600">
-                Already paid? This page will update automatically.
-              </p>
-            </>
-          ) : (
-            <div className="text-center py-4">
-              <div className="w-8 h-8 border-2 border-[#00C896]/30 border-t-[#00C896] rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-slate-400 text-sm">Loading payment details...</p>
-            </div>
-          )}
-        </div>
+              {" | "}
+              <button
+                onClick={handleAlreadyPaid}
+                disabled={manualChecking}
+                className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 disabled:opacity-50"
+              >
+                {manualChecking ? "Checking…" : "I already paid"}
+              </button>
+            </p>
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-slate-400 text-sm">Loading payment details…</p>
+          </div>
+        )}
       </div>
     </div>
   );
