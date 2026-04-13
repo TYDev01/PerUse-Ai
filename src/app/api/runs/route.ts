@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       webhookUrl: `${appUrl}/api/webhooks/locus`,
     });
 
-    // Store payment record
+    // Store payment record (including checkoutUrl — Locus only returns it on creation)
     await db.payment.create({
       data: {
         toolRunId: run.id,
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
         currency: "USDC",
         status: "PENDING",
         externalSessionId: checkoutSession.id,
+        checkoutUrl: checkoutSession.checkoutUrl,
       },
     });
 

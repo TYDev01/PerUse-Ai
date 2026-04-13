@@ -163,6 +163,7 @@ model Payment {
   provider          String        @default("locus")
   externalSessionId String?
   externalReference String?
+  checkoutUrl       String?
   amount            Float
   currency          String        @default("USDC")
   status            PaymentStatus @default(PENDING)

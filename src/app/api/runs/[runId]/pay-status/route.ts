@@ -55,20 +55,21 @@ export async function GET(
     return NextResponse.json({ status: "pending", mockMode: true });
   }
 
+  // Serve the stored checkoutUrl from DB (Locus GET endpoint does not return it)
+  const storedCheckoutUrl = (run.payment as { checkoutUrl?: string | null }).checkoutUrl ?? "";
+
   // Check session status from Locus
   const sessionRes = await locusFetch(`/checkout/sessions/${sessionId}`);
   if (!sessionRes.ok) {
-    return NextResponse.json({ status: "pending" });
+    return NextResponse.json({ status: "pending", checkoutUrl: storedCheckoutUrl });
   }
 
   const sessionData = await sessionRes.json();
   const session = sessionData.data as {
     status?: string;
-    checkoutUrl?: string;
   } | null;
 
   const sessionStatus = session?.status ?? "";
-  const checkoutUrl = session?.checkoutUrl ?? "";
 
   if (sessionStatus === "EXPIRED" || sessionStatus === "CANCELLED") {
     return NextResponse.json({
@@ -77,9 +78,9 @@ export async function GET(
     });
   }
 
-  // Not yet paid — return checkoutUrl so the client can show it to the user
+  // Not yet paid — return stored checkoutUrl so the client can show the iframe
   if (sessionStatus !== "PAID") {
-    return NextResponse.json({ status: "pending", checkoutUrl });
+    return NextResponse.json({ status: "pending", checkoutUrl: storedCheckoutUrl });
   }
 
   // Session is PAID — update DB and trigger execution (idempotent)
