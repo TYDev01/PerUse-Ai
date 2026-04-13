@@ -43,7 +43,7 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
       <p className="text-slate-400 mb-8">Platform overview</p>
 
       {/* Stats */}
@@ -76,7 +76,7 @@ export default async function AdminDashboard() {
           </div>
           <div className="space-y-3">
             {pendingTools.map((tool: any) => (
-              <div key={tool.id} className="glass-card rounded-2xl p-5 flex items-center gap-5">
+              <div key={tool.id} className="glass-card rounded-2xl p-5 flex flex-wrap items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-white">{tool.name}</h3>
                   <p className="text-slate-400 text-sm mt-0.5">

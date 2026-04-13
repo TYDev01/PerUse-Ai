@@ -52,7 +52,7 @@ export default async function CreatorDashboard() {
     <div className="max-w-5xl">
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-10">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-8 md:mb-10">
         <div>
           <p className="text-[#00C896] text-xs font-bold uppercase tracking-[0.18em] mb-2">Creator</p>
           <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard</h1>
@@ -69,7 +69,7 @@ export default async function CreatorDashboard() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-12">
         {STATS.map((s) => (
           <div
             key={s.label}
@@ -104,8 +104,8 @@ export default async function CreatorDashboard() {
         </div>
       ) : (
         <div className="rounded-2xl border border-white/6 overflow-hidden" style={{ background: "rgba(255,255,255,0.02)" }}>
-          {/* Table header */}
-          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-white/6">
+          {/* Desktop table header */}
+          <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-white/6">
             <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#8b9ab0]">Tool</span>
             <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#8b9ab0] text-right">Status</span>
             <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#8b9ab0] text-right">Runs</span>
@@ -117,23 +117,39 @@ export default async function CreatorDashboard() {
             return (
               <div
                 key={tool.id}
-                className={`grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-4 items-center ${
-                  i < tools.length - 1 ? "border-b border-white/5" : ""
-                } hover:bg-white/[0.02] transition-colors`}
+                className={i < tools.length - 1 ? "border-b border-white/5" : ""}
               >
-                <div className="min-w-0">
-                  <p className="text-white font-medium text-sm truncate">{tool.name}</p>
-                  <p className="text-[#8b9ab0] text-xs mt-0.5 truncate">{tool.shortDescription}</p>
+                {/* Mobile card */}
+                <div className="sm:hidden px-4 py-4 hover:bg-white/[0.02] transition-colors">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-white font-medium text-sm truncate">{tool.name}</p>
+                      <p className="text-[#8b9ab0] text-xs mt-0.5 truncate">{tool.shortDescription}</p>
+                    </div>
+                    <span className="text-white text-sm font-semibold shrink-0 tabular-nums">${tool.price.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-2.5">
+                    <span className={`text-[11px] px-2.5 py-1 rounded-md border font-semibold ${st.color}`}>{st.label}</span>
+                    <span className="text-[#8b9ab0] text-xs">{tool._count?.toolRuns ?? 0} runs</span>
+                  </div>
                 </div>
-                <span className={`text-[11px] px-2.5 py-1 rounded-md border font-semibold ${st.color}`}>
-                  {st.label}
-                </span>
-                <span className="text-[#8b9ab0] text-sm text-right tabular-nums">
-                  {tool._count?.toolRuns ?? 0}
-                </span>
-                <span className="text-white text-sm font-semibold text-right tabular-nums">
-                  ${tool.price.toFixed(2)}
-                </span>
+
+                {/* Desktop table row */}
+                <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-white font-medium text-sm truncate">{tool.name}</p>
+                    <p className="text-[#8b9ab0] text-xs mt-0.5 truncate">{tool.shortDescription}</p>
+                  </div>
+                  <span className={`text-[11px] px-2.5 py-1 rounded-md border font-semibold ${st.color}`}>
+                    {st.label}
+                  </span>
+                  <span className="text-[#8b9ab0] text-sm text-right tabular-nums">
+                    {tool._count?.toolRuns ?? 0}
+                  </span>
+                  <span className="text-white text-sm font-semibold text-right tabular-nums">
+                    ${tool.price.toFixed(2)}
+                  </span>
+                </div>
               </div>
             );
           })}
