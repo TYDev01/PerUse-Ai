@@ -7,7 +7,7 @@ import Select from "@/components/ui/Select";
 type InputField = {
   key: string;
   label: string;
-  type: "text" | "textarea" | "url" | "number";
+  type: "text" | "textarea" | "url" | "select";
   required: boolean;
   placeholder: string;
 };

@@ -10,9 +10,12 @@ function RegisterForm() {
   const router = useRouter();
   const [role, setRole] = useState<"USER" | "CREATOR">("USER");
   const [syncing, setSyncing] = useState(false);
+  // Only trigger sync after the user has explicitly clicked the button,
+  // preventing auto-sync with role="USER" if they were already authenticated on page load.
+  const [intentToSync, setIntentToSync] = useState(false);
 
   useEffect(() => {
-    if (!ready || !authenticated || syncing) return;
+    if (!ready || !authenticated || syncing || !intentToSync) return;
     setSyncing(true);
     fetch("/api/auth/privy-sync", {
       method: "POST",
@@ -23,7 +26,7 @@ function RegisterForm() {
         router.push(role === "CREATOR" ? "/creator/dashboard" : "/browse");
       }
     });
-  }, [ready, authenticated, role, syncing, router]);
+  }, [ready, authenticated, role, syncing, router, intentToSync]);
 
   return (
     <div className="min-h-screen flex">
@@ -201,7 +204,10 @@ function RegisterForm() {
 
           {/* CTA */}
           <button
-            onClick={login}
+            onClick={() => {
+              setIntentToSync(true);
+              login();
+            }}
             disabled={!ready || syncing}
             className="w-full py-3.5 rounded-xl bg-[#00C896] hover:bg-[#00b585] active:scale-[0.98] disabled:opacity-50 text-white font-semibold transition-all text-sm shadow-lg shadow-indigo-500/20"
           >

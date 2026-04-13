@@ -58,11 +58,22 @@ export async function POST(req: NextRequest) {
     // Try linking an existing email-based account
     user = await db.user.findUnique({ where: { email: email.toLowerCase() } });
     if (user) {
-      // Link existing account to Privy
+      // Link existing account to Privy, and upgrade to CREATOR if explicitly requested
+      const isUpgrade = roleInput === Role.CREATOR && user.role === Role.USER;
       user = await db.user.update({
         where: { id: user.id },
-        data: { privyDid },
+        data: {
+          privyDid,
+          ...(isUpgrade ? { role: Role.CREATOR } : {}),
+        },
       });
+      if (isUpgrade) {
+        await db.creatorBalance.upsert({
+          where: { creatorId: user.id },
+          update: {},
+          create: { creatorId: user.id },
+        });
+      }
     } else {
       // Brand new user
       user = await db.user.create({
@@ -77,6 +88,17 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+  } else if (roleInput === Role.CREATOR && user.role === Role.USER) {
+    // Upgrade existing USER to CREATOR when explicitly requested
+    user = await db.user.update({
+      where: { id: user.id },
+      data: { role: Role.CREATOR },
+    });
+    await db.creatorBalance.upsert({
+      where: { creatorId: user.id },
+      update: {},
+      create: { creatorId: user.id },
+    });
   }
 
   return NextResponse.json({
