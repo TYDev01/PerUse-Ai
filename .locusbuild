@@ -3,6 +3,7 @@
     "web": {
       "path": ".",
       "port": 8080,
+      "domains": ["peruseai.xyz"],
       "healthCheck": "/api/health",
       "startCommand": "npx prisma migrate deploy && node_modules/.bin/next start -p 8080",
       "runtime": { "cpu": 512, "memory": 1024 },
@@ -11,7 +12,7 @@
         "NODE_ENV": "production",
         "NEXT_PUBLIC_PRIVY_APP_ID": "REPLACE_WITH_PRIVY_APP_ID",
         "PRIVY_APP_SECRET": "REPLACE_WITH_PRIVY_APP_SECRET",
-        "APP_URL": "${{web.URL}}",
+        "APP_URL": "https://peruseai.xyz",
         "LOCUS_API_KEY": "REPLACE_WITH_LOCUS_API_KEY",
         "LOCUS_API_BASE": "https://api.paywithlocus.com/api",
         "LOCUS_WEBHOOK_SECRET": "REPLACE_WITH_WEBHOOK_SECRET",
