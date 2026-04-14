@@ -23,7 +23,7 @@ export default async function ToolDetailPage({
     include: {
       inputFields: { orderBy: { sortOrder: "asc" } },
       executionConfig: { select: { provider: true, model: true } },
-      creator: { select: { name: true } },
+      creator: { select: { name: true, email: true } },
     },
   });
 

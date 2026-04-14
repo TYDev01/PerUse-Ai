@@ -29,7 +29,7 @@ interface Tool {
   totalRuns: number;
   inputFields: InputField[];
   executionConfig: { provider: string; model: string } | null;
-  creator: { name: string | null };
+  creator: { name: string | null; email: string };
 }
 
 export default function ToolDetailClient({ tool }: { tool: Tool }) {
@@ -134,7 +134,7 @@ export default function ToolDetailClient({ tool }: { tool: Tool }) {
             {[
               { label: "Price per run", value: `$${tool.price.toFixed(2)} USDC` },
               { label: "Total runs", value: tool.totalRuns.toLocaleString() },
-              { label: "By", value: tool.creator.name ?? "Creator" },
+              { label: "Creator", value: tool.creator.name ?? tool.creator.email.split("@")[0] },
             ].map((s) => (
               <div key={s.label} className="glass-card rounded-xl p-4 text-center">
                 <div className="text-white font-semibold">{s.value}</div>
