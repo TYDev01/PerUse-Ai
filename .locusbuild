@@ -15,7 +15,7 @@
         "APP_URL": "https://peruseai.xyz",
         "LOCUS_API_KEY": "REPLACE_WITH_LOCUS_API_KEY",
         "LOCUS_API_BASE": "https://beta-api.paywithlocus.com/api",
-        "LOCUS_WEBHOOK_SECRET": "REPLACE_WITH_WEBHOOK_SECRET",
+        "LOCUS_WEBHOOK_SECRET": "464fee9c4222e7526ea1bca5a867333f4e0164a2a5dbe5461162f019080d66a3",
         "PAYMENT_MOCK_MODE": "false",
         "PLATFORM_FEE_PERCENT": "20",
         "PLATFORM_FEE_MINIMUM": "0.10"
