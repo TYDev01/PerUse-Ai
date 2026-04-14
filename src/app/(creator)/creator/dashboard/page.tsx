@@ -55,14 +55,14 @@ export default async function CreatorDashboard() {
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8 md:mb-10">
         <div>
           <p className="text-[#00C896] text-xs font-bold uppercase tracking-[0.18em] mb-2">Creator</p>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Dashboard</h1>
           <p className="text-[#8b9ab0] mt-1 text-sm">
             Welcome back{session.user.name ? `, ${session.user.name}` : ""}
           </p>
         </div>
         <Link
           href="/creator/tools/new"
-          className="px-5 py-2.5 bg-[#00C896] hover:bg-[#00b585] text-[#0c1117] rounded-lg text-sm font-bold transition-all shadow-lg shadow-[#00C896]/20 hover:shadow-[#00C896]/35 active:scale-[0.98]"
+          className="w-full sm:w-auto text-center px-5 py-2.5 bg-[#00C896] hover:bg-[#00b585] text-[#0c1117] rounded-lg text-sm font-bold transition-all shadow-lg shadow-[#00C896]/20 hover:shadow-[#00C896]/35 active:scale-[0.98]"
         >
           + New Tool
         </Link>
@@ -73,11 +73,11 @@ export default async function CreatorDashboard() {
         {STATS.map((s) => (
           <div
             key={s.label}
-            className="rounded-2xl border border-white/6 p-6 flex flex-col gap-3"
+            className="rounded-2xl border border-white/6 p-4 sm:p-6 flex flex-col gap-2 sm:gap-3"
             style={{ background: "rgba(255,255,255,0.025)" }}
           >
-            <p className="text-[#8b9ab0] text-xs font-medium uppercase tracking-wider">{s.label}</p>
-            <p className="text-2xl font-bold text-white">{s.value}</p>
+            <p className="text-[#8b9ab0] text-[10px] sm:text-xs font-medium uppercase tracking-wider">{s.label}</p>
+            <p className="text-xl sm:text-2xl font-bold text-white tabular-nums">{s.value}</p>
           </div>
         ))}
       </div>
@@ -90,7 +90,7 @@ export default async function CreatorDashboard() {
 
       {!tools || tools.length === 0 ? (
         <div
-          className="rounded-2xl border border-white/6 p-16 text-center"
+          className="rounded-2xl border border-white/6 p-8 sm:p-16 text-center"
           style={{ background: "rgba(255,255,255,0.02)" }}
         >
           <p className="text-white font-semibold text-lg mb-2">No tools yet</p>

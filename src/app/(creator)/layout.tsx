@@ -29,6 +29,12 @@ export default async function CreatorLayout({ children }: { children: React.Reac
             Dashboard
           </Link>
           <Link
+            href="/creator/analytics"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#8b9ab0] hover:text-white hover:bg-white/5 transition-all font-medium"
+          >
+            Analytics
+          </Link>
+          <Link
             href="/creator/tools/new"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#8b9ab0] hover:text-white hover:bg-white/5 transition-all font-medium"
           >
@@ -57,6 +63,12 @@ export default async function CreatorLayout({ children }: { children: React.Reac
             className="px-3 py-1.5 rounded-lg text-xs text-[#8b9ab0] hover:text-white hover:bg-white/5 transition-all font-medium whitespace-nowrap shrink-0"
           >
             Dashboard
+          </Link>
+          <Link
+            href="/creator/analytics"
+            className="px-3 py-1.5 rounded-lg text-xs text-[#8b9ab0] hover:text-white hover:bg-white/5 transition-all font-medium whitespace-nowrap shrink-0"
+          >
+            Analytics
           </Link>
           <Link
             href="/creator/tools/new"
