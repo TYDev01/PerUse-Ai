@@ -4,7 +4,7 @@
       "path": ".",
       "port": 8080,
       "healthCheck": "/api/health",
-      "startCommand": "npx prisma migrate deploy && node_modules/.bin/next start",
+      "startCommand": "npx prisma migrate deploy && node_modules/.bin/next start -p 8080",
       "runtime": { "cpu": 512, "memory": 1024 },
       "env": {
         "DATABASE_URL": "${{db.DATABASE_URL}}",

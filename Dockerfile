@@ -22,4 +22,4 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 EXPOSE 8080
 
-CMD ["node_modules/.bin/next", "start"]
+CMD ["node_modules/.bin/next", "start", "-p", "8080"]
