@@ -18,7 +18,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           theme: "dark",
           accentColor: "#6366f1",
         },
-        loginMethods: ["email", "google", "github", "wallet"],
+        loginMethods: ["email", "wallet"],
       }}
     >
       {/* Ambient glow blobs shown on all "app" pages */}
