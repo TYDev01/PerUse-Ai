@@ -49,7 +49,7 @@ export default async function CreatorDashboard() {
   ];
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl mx-auto">
 
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8 md:mb-10">

@@ -145,7 +145,7 @@ export default async function CreatorAnalyticsPage() {
   ] as const;
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl mx-auto">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="mb-8 md:mb-10">
