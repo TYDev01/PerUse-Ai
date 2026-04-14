@@ -21,6 +21,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm">
           Dashboard
         </Link>
+        <Link href="/admin/analytics" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm">
+          Analytics
+        </Link>
         <Link href="/admin/tools" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm">
           All Tools
         </Link>
@@ -42,6 +45,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </span>
           <Link href="/admin/dashboard" className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap shrink-0">
             Dashboard
+          </Link>
+          <Link href="/admin/analytics" className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap shrink-0">
+            Analytics
           </Link>
           <Link href="/admin/tools" className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap shrink-0">
             All Tools
