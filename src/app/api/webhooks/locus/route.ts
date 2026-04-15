@@ -48,8 +48,8 @@ export async function POST(req: NextRequest) {
     ]);
 
     // Trigger execution asynchronously via internal self-call
-    const port = process.env.PORT ?? 3000;
-    fetch(`http://localhost:${port}/api/runs/${payment.toolRunId}`, {
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+    fetch(`${appUrl}/api/runs/${payment.toolRunId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     }).catch(console.error);
