@@ -10,29 +10,43 @@ const LOCUS_API_KEY = process.env.LOCUS_API_KEY ?? "";
 async function locusWrapped(
   provider: string,
   endpoint: string,
-  body: Record<string, unknown>
+  body: Record<string, unknown>,
+  retries = 3
 ): Promise<{ data: unknown; cost?: number }> {
-  const res = await fetch(
-    `${LOCUS_API_BASE}/wrapped/${provider}/${endpoint}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOCUS_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    }
-  );
+  const RETRYABLE = new Set([502, 503, 504]);
 
-  if (!res.ok) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const res = await fetch(
+      `${LOCUS_API_BASE}/wrapped/${provider}/${endpoint}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOCUS_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (res.ok) {
+      const json = await res.json();
+      return { data: json.data, cost: json.cost };
+    }
+
     const err = await res.json().catch(() => ({}));
+
+    if (RETRYABLE.has(res.status) && attempt < retries) {
+      await new Promise((r) => setTimeout(r, 500 * attempt));
+      continue;
+    }
+
     throw new Error(
       err.message ?? `Locus wrapped API error: ${res.status} ${provider}/${endpoint}`
     );
   }
 
-  const json = await res.json();
-  return { data: json.data, cost: json.cost };
+  // Should never reach here
+  throw new Error(`Locus wrapped API error: ${provider}/${endpoint} failed after ${retries} attempts`);
 }
 
 /** Call OpenAI chat completions via Locus wrapped API */
